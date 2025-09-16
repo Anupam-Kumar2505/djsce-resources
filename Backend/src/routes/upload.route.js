@@ -30,6 +30,43 @@ const upload = multer({
   },
 });
 
+// Update file name endpoint
+router.patch("/files/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: "File name is required" });
+    }
+
+    const updatedFile = await File.findByIdAndUpdate(
+      id,
+      { name: name.trim() },
+      { new: true }
+    );
+
+    if (!updatedFile) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    res.json({
+      message: "File name updated successfully",
+      file: {
+        id: updatedFile._id,
+        fileUrl: updatedFile.fileUrl,
+        name: updatedFile.name,
+        type: updatedFile.type,
+        subject: updatedFile.subject,
+        year: updatedFile.year,
+      },
+    });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({ error: "Update failed: " + error.message });
+  }
+});
+
 // Upload file endpoint
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {

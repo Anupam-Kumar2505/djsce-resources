@@ -2,7 +2,9 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 
 // JWT secret key (in production, this should be in environment variables)
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-this-in-production";
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  "your-super-secret-jwt-key-change-this-in-production";
 
 // Generate JWT token
 export const generateToken = (userId) => {

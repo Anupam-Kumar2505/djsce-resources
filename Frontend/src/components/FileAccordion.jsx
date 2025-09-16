@@ -165,7 +165,7 @@ function FileAccordion({
               {/* Subject Header */}
               <button
                 onClick={() => toggleSubject(subject)}
-                className={`w-full p-5 flex items-center justify-between hover:bg-gray-800/50 transition-all duration-300 group ${colors.border} border-l-4`}
+                className={`w-full p-5 flex items-center justify-between hover:bg-gray-800/50 transition-all duration-300 group ${colors.border} border-l-4 cursor-pointer`}
               >
                 <div className="flex items-center space-x-4">
                   <div
@@ -196,9 +196,8 @@ function FileAccordion({
                   </div>
                 </div>
                 <div
-                  className={`transform transition-transform duration-300 ${
-                    isExpanded ? "rotate-180" : ""
-                  }`}
+                  className={`transform transition-transform duration-300 ${isExpanded ? "rotate-180" : ""
+                    }`}
                 >
                   <svg
                     className="w-5 h-5 text-gray-400"
@@ -226,7 +225,7 @@ function FileAccordion({
                         className={`bg-gray-900/50 border ${colors.border} rounded-lg p-5 hover:border-gray-600 hover:bg-gray-800/50 transition-all duration-300 group backdrop-blur-sm `}
                       >
                         <div className="text-center flex justify-between items-center">
-                          <div className="ml-4 flex items-center gap-5">
+                          <div className="ml-4 flex items-center gap-5 flex-1">
                             {(() => {
                               const iconName = getFileIcon(file.fileUrl);
                               const IconComponent =

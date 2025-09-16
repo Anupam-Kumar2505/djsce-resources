@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
         const parsedUser = JSON.parse(savedUser);
         setToken(savedToken);
         setUser(parsedUser);
-        
+
         // Set default authorization header for axios
         axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
       } catch (error) {
@@ -36,18 +36,18 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem("adminUser");
       }
     }
-    
+
     setLoading(false);
   }, []);
 
   const login = (userData, userToken) => {
     setUser(userData);
     setToken(userToken);
-    
+
     // Save to localStorage
     localStorage.setItem("adminToken", userToken);
     localStorage.setItem("adminUser", JSON.stringify(userData));
-    
+
     // Set default authorization header for future requests
     axios.defaults.headers.common["Authorization"] = `Bearer ${userToken}`;
   };
@@ -55,11 +55,11 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
-    
+
     // Clear localStorage
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminUser");
-    
+
     // Remove authorization header
     delete axios.defaults.headers.common["Authorization"];
   };
@@ -82,9 +82,5 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

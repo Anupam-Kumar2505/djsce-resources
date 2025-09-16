@@ -11,24 +11,26 @@ router.post("/login", async (req, res) => {
 
     // Validate input
     if (!username || !password) {
-      return res.status(400).json({ 
-        error: "Username and password are required" 
+      return res.status(400).json({
+        error: "Username and password are required",
       });
     }
 
     // Find user by username
-    const user = await User.findOne({ username: username.toLowerCase().trim() });
+    const user = await User.findOne({
+      username: username.toLowerCase().trim(),
+    });
     if (!user) {
-      return res.status(401).json({ 
-        error: "Invalid username or password" 
+      return res.status(401).json({
+        error: "Invalid username or password",
       });
     }
 
     // Check password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      return res.status(401).json({ 
-        error: "Invalid username or password" 
+      return res.status(401).json({
+        error: "Invalid username or password",
       });
     }
 
@@ -57,8 +59,8 @@ router.post("/setup-admin", async (req, res) => {
     // Check if admin already exists
     const existingAdmin = await User.findOne({ role: "admin" });
     if (existingAdmin) {
-      return res.status(400).json({ 
-        error: "Admin user already exists" 
+      return res.status(400).json({
+        error: "Admin user already exists",
       });
     }
 
@@ -66,14 +68,14 @@ router.post("/setup-admin", async (req, res) => {
 
     // Validate input
     if (!username || !password) {
-      return res.status(400).json({ 
-        error: "Username and password are required" 
+      return res.status(400).json({
+        error: "Username and password are required",
       });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ 
-        error: "Password must be at least 6 characters long" 
+      return res.status(400).json({
+        error: "Password must be at least 6 characters long",
       });
     }
 
@@ -97,8 +99,8 @@ router.post("/setup-admin", async (req, res) => {
   } catch (error) {
     console.error("Admin setup error:", error);
     if (error.code === 11000) {
-      return res.status(400).json({ 
-        error: "Username already exists" 
+      return res.status(400).json({
+        error: "Username already exists",
       });
     }
     res.status(500).json({ error: "Failed to create admin user" });
