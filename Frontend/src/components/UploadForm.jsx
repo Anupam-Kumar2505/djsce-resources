@@ -52,7 +52,7 @@ function UploadForm({ onUploadSuccess, onClose }) {
       formData.append("year", year);
 
       const response = await axios.post(
-        "http://localhost:5000/api/upload",
+        "https://djsce-resources.onrender.com:5000/api/upload",
         formData,
         {
           headers: {
