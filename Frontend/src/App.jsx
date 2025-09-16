@@ -46,6 +46,14 @@ function App() {
     }
   };
 
+  const handleFileUpdate = (fileId, updates) => {
+    setFiles((prevFiles) =>
+      prevFiles.map((file) =>
+        (file._id || file.id) === fileId ? { ...file, ...updates } : file
+      )
+    );
+  };
+
   const getFileName = (file) => {
     // Use the name field from database if available, otherwise extract from URL
     return file.name || getFileNameFromUrl(file.fileUrl);
@@ -141,6 +149,7 @@ function App() {
                 subjectColors={subjectColors}
                 getFileIcon={getFileIcon}
                 getFileName={getFileName}
+                onFileUpdate={handleFileUpdate}
               />
             )}
           </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import {
   GrDocumentPdf,
   GrDocumentWord,
@@ -9,8 +10,11 @@ import {
   GrDocumentZip,
 } from "react-icons/gr";
 
-function FileAccordion({ files, subjectColors, getFileIcon, getFileName }) {
+function FileAccordion({ files, subjectColors, getFileIcon, getFileName, onFileUpdate }) {
   const [expandedSubjects, setExpandedSubjects] = useState(new Set());
+  const [editingFile, setEditingFile] = useState(null);
+  const [editingName, setEditingName] = useState("");
+  const [updating, setUpdating] = useState(false);
 
   // Group files by subject
   const groupFilesBySubject = (files) => {
@@ -37,6 +41,44 @@ function FileAccordion({ files, subjectColors, getFileIcon, getFileName }) {
 
   const getSubjectColor = (subject) => {
     return subjectColors[subject] || subjectColors.default;
+  };
+
+  const startEditing = (file) => {
+    const fileId = file._id || file.id;
+    if (!fileId) {
+      alert("Cannot edit this file - missing ID");
+      return;
+    }
+    setEditingFile(fileId);
+    setEditingName(getFileName(file));
+  };
+
+  const cancelEditing = () => {
+    setEditingFile(null);
+    setEditingName("");
+  };
+
+  const saveFileName = async (file) => {
+    if (!editingName.trim()) return;
+
+    setUpdating(true);
+    try {
+      const response = await axios.patch(
+        `https://djsce-resources.onrender.com/api/files/${file._id || file.id}`,
+        { name: editingName.trim() }
+      );
+
+      if (response.status === 200) {
+        onFileUpdate && onFileUpdate(file._id || file.id, { name: editingName.trim() });
+        setEditingFile(null);
+        setEditingName("");
+      }
+    } catch (error) {
+      console.error("Error updating file name:", error);
+      alert("Failed to update file name. Please try again.");
+    } finally {
+      setUpdating(false);
+    }
   };
 
   if (!files || files.length === 0) {
@@ -119,9 +161,8 @@ function FileAccordion({ files, subjectColors, getFileIcon, getFileName }) {
                   </div>
                 </div>
                 <div
-                  className={`transform transition-transform duration-300 ${
-                    isExpanded ? "rotate-180" : ""
-                  }`}
+                  className={`transform transition-transform duration-300 ${isExpanded ? "rotate-180" : ""
+                    }`}
                 >
                   <svg
                     className="w-5 h-5 text-gray-400"
@@ -149,7 +190,7 @@ function FileAccordion({ files, subjectColors, getFileIcon, getFileName }) {
                         className={`bg-gray-900/50 border ${colors.border} rounded-lg p-5 hover:border-gray-600 hover:bg-gray-800/50 transition-all duration-300 group backdrop-blur-sm `}
                       >
                         <div className="text-center flex justify-between items-center">
-                          <div className="ml-4 flex items-center gap-5">
+                          <div className="ml-4 flex items-center gap-5 flex-1">
                             {(() => {
                               const iconName = getFileIcon(file.fileUrl);
                               const IconComponent =
@@ -166,13 +207,65 @@ function FileAccordion({ files, subjectColors, getFileIcon, getFileName }) {
                               return <IconComponent color="white" size={35} />;
                             })()}
 
-                            <div className="text-left">
-                              <h5 className="text-sm font-medium text-white leading-tight">
-                                {getFileName(file)}
-                              </h5>
-                              <p className="text-xs text-gray-400 mt-1">
-                                {file.type}
-                              </p>
+                            <div className="text-left flex-1">
+                              {editingFile === (file._id || file.id) ? (
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="text"
+                                    value={editingName}
+                                    onChange={(e) => setEditingName(e.target.value)}
+                                    className="bg-gray-800 text-white text-sm px-2 py-1 rounded border border-gray-600 focus:border-blue-500 focus:outline-none flex-1"
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') saveFileName(file);
+                                      if (e.key === 'Escape') cancelEditing();
+                                    }}
+                                    autoFocus
+                                    disabled={updating}
+                                  />
+                                  <button
+                                    onClick={() => saveFileName(file)}
+                                    disabled={updating}
+                                    className="text-green-400 hover:text-green-300 p-1 cursor-pointer disabled:opacity-50"
+                                  >
+                                    {updating ? (
+                                      <div className="w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                  <button
+                                    onClick={cancelEditing}
+                                    disabled={updating}
+                                    className="text-red-400 hover:text-red-300 p-1 cursor-pointer"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center space-x-2">
+                                  <div>
+                                    <h5 className="text-sm font-medium text-white leading-tight">
+                                      {getFileName(file)}
+                                    </h5>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      {file.type}
+                                    </p>
+                                  </div>
+                                  <button
+                                    onClick={() => startEditing(file)}
+                                    className="text-gray-400 hover:text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                    title="Edit file name"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
                           <div>
@@ -186,7 +279,7 @@ function FileAccordion({ files, subjectColors, getFileIcon, getFileName }) {
                                   e.preventDefault();
                                   window.open(
                                     file.fileUrl +
-                                      "#toolbar=1&navpanes=1&scrollbar=1",
+                                    "#toolbar=1&navpanes=1&scrollbar=1",
                                     "_blank"
                                   );
                                 }
