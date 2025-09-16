@@ -97,7 +97,7 @@ function UploadForm({ onUploadSuccess, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200 text-gray-400 hover:text-gray-600"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200 text-gray-400 hover:text-gray-600 cursor-pointer"
           >
             <svg
               className="w-5 h-5"
