@@ -41,7 +41,7 @@ function Header({ onUploadClick, onAdminClick }) {
               </svg>
               <span>Upload</span>
             </button>
-            
+
             {/* Admin Controls */}
             {isAuthenticated() && isAdmin() ? (
               <div className="flex items-center space-x-3">
