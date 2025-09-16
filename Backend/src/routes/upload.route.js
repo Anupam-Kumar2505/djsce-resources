@@ -1,7 +1,9 @@
 import express from "express";
 import multer from "multer";
 import uploadOnCloud from "../config/cloudinary.js";
+import { v2 as cloudinary } from "cloudinary";
 import File from "../models/files.model.js";
+import { authenticateAdmin } from "../middleware/auth.js";
 import fs from "fs";
 import path from "path";
 
@@ -86,6 +88,99 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       fs.unlinkSync(req.file.path);
     }
     res.status(500).json({ error: "Upload failed: " + error.message });
+  }
+});
+
+// Delete file endpoint (admin only)
+router.delete("/file/:id", authenticateAdmin, async (req, res) => {
+  try {
+    const fileId = req.params.id;
+    const file = await File.findById(fileId);
+
+    if (!file) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    // Extract Cloudinary public_id from URL
+    const urlParts = file.fileUrl.split('/');
+    const fileNameWithExtension = urlParts[urlParts.length - 1];
+    const publicId = fileNameWithExtension.split('.')[0]; // Remove extension
+    
+    // Find the folder path in the URL
+    const folderIndex = urlParts.findIndex(part => part.includes('djsce_resources'));
+    const folderPath = folderIndex !== -1 ? urlParts.slice(folderIndex, -1).join('/') : '';
+    const fullPublicId = folderPath ? `${folderPath}/${publicId}` : publicId;
+
+    try {
+      // Delete from Cloudinary
+      const cloudinaryResult = await cloudinary.uploader.destroy(fullPublicId);
+      console.log('Cloudinary deletion result:', cloudinaryResult);
+    } catch (cloudinaryError) {
+      console.error('Failed to delete from Cloudinary:', cloudinaryError);
+      // Continue with database deletion even if Cloudinary deletion fails
+    }
+
+    // Delete from database
+    await File.findByIdAndDelete(fileId);
+
+    res.json({
+      message: "File deleted successfully from both database and cloud storage",
+      deletedFile: {
+        id: file._id,
+        name: file.name,
+        subject: file.subject,
+        year: file.year,
+      },
+    });
+  } catch (error) {
+    console.error("Delete error:", error);
+    res.status(500).json({ error: "Failed to delete file: " + error.message });
+  }
+});
+
+// Update file name endpoint (admin only)
+router.put("/file/:id", authenticateAdmin, async (req, res) => {
+  try {
+    const fileId = req.params.id;
+    const { name, subject, type } = req.body;
+
+    if (!name && !subject && !type) {
+      return res.status(400).json({ 
+        error: "At least one field (name, subject, or type) is required to update" 
+      });
+    }
+
+    const file = await File.findById(fileId);
+    if (!file) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    // Update only provided fields
+    const updateFields = {};
+    if (name) updateFields.name = name.trim();
+    if (subject) updateFields.subject = subject.trim();
+    if (type) updateFields.type = type.trim();
+
+    const updatedFile = await File.findByIdAndUpdate(
+      fileId,
+      updateFields,
+      { new: true, runValidators: true }
+    );
+
+    res.json({
+      message: "File updated successfully",
+      file: {
+        id: updatedFile._id,
+        fileUrl: updatedFile.fileUrl,
+        name: updatedFile.name,
+        type: updatedFile.type,
+        subject: updatedFile.subject,
+        year: updatedFile.year,
+      },
+    });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({ error: "Failed to update file: " + error.message });
   }
 });
 

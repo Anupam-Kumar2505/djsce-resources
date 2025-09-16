@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import UploadForm from "./components/UploadForm";
+import AdminLogin from "./components/AdminLogin";
 import Header from "./components/Header";
 import YearSelector from "./components/YearSelector";
 import FileAccordion from "./components/FileAccordion";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { years, subjectColors } from "./util/data";
 
 function App() {
@@ -11,14 +13,16 @@ function App() {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const { login } = useAuth();
 
   const fetchFiles = async (year) => {
     setLoading(true);
     console.log("Fetching files for year:", year);
+    const url =
+      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
-      const response = await axios.get(
-        `https://djsce-resources.onrender.com/year/${year}`
-      );
+      const response = await axios.get(`${url}/year/${year}`);
       console.log("API Response:", response.data);
       setFiles(response.data.files || []);
     } catch (error) {
@@ -44,6 +48,25 @@ function App() {
     if (selectedYear === newFile.year) {
       setFiles((prevFiles) => [newFile, ...prevFiles]);
     }
+  };
+
+  const handleFileUpdate = (updatedFile, fileId, action) => {
+    if (action === "delete") {
+      // Remove file from list
+      setFiles((prevFiles) => prevFiles.filter((file) => file._id !== fileId));
+    } else if (updatedFile) {
+      // Update file in list
+      setFiles((prevFiles) =>
+        prevFiles.map((file) =>
+          file._id === updatedFile.id ? { ...file, ...updatedFile } : file
+        )
+      );
+    }
+  };
+
+  const handleAdminLoginSuccess = (userData, token) => {
+    login(userData, token);
+    setShowAdminLogin(false);
   };
 
   const getFileName = (file) => {
@@ -106,7 +129,10 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
       {/* Header */}
-      <Header onUploadClick={() => setShowUploadForm(true)} />
+      <Header
+        onUploadClick={() => setShowUploadForm(true)}
+        onAdminClick={() => setShowAdminLogin(true)}
+      />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
@@ -141,6 +167,7 @@ function App() {
                 subjectColors={subjectColors}
                 getFileIcon={getFileIcon}
                 getFileName={getFileName}
+                onFileUpdate={handleFileUpdate}
               />
             )}
           </div>
@@ -153,8 +180,24 @@ function App() {
           onClose={() => setShowUploadForm(false)}
         />
       )}
+
+      {showAdminLogin && (
+        <AdminLogin
+          onLoginSuccess={handleAdminLoginSuccess}
+          onClose={() => setShowAdminLogin(false)}
+        />
+      )}
     </div>
   );
 }
 
-export default App;
+// Wrap App with AuthProvider
+function AppWithAuth() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+}
+
+export default AppWithAuth;

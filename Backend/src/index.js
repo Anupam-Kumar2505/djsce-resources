@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import yearRouter from "./routes/year.route.js";
 import uploadRouter from "./routes/upload.route.js";
+import authRouter from "./routes/auth.route.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ mongoose
 
 app.use("/", yearRouter);
 app.use("/api", uploadRouter);
+app.use("/auth", authRouter);
 
 app.listen(5000, () => {
   console.log("Server is running on port 5000");

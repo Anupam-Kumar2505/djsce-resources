@@ -43,6 +43,8 @@ function UploadForm({ onUploadSuccess, onClose }) {
 
     setUploading(true);
     setMessage("");
+    const apiUrl =
+      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
 
     try {
       const formData = new FormData();
@@ -51,15 +53,11 @@ function UploadForm({ onUploadSuccess, onClose }) {
       formData.append("subject", subject);
       formData.append("year", year);
 
-      const response = await axios.post(
-        "https://djsce-resources.onrender.com/api/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post(`${apiUrl}/api/upload`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       if (response.status === 200) {
         setMessage("File uploaded successfully!");
