@@ -17,7 +17,7 @@ function App() {
     console.log("Fetching files for year:", year);
     try {
       const response = await axios.get(
-        `https://djsce-resources.onrender.com:5000/year/${year}`
+        `https://djsce-resources.onrender.com/year/${year}`
       );
       console.log("API Response:", response.data);
       setFiles(response.data.files || []);
