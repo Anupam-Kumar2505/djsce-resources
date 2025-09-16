@@ -148,11 +148,10 @@ function UploadForm({ onUploadSuccess, onClose }) {
                   type="button"
                   onClick={() => setType(t.value)}
                   className={`
-                    p-4 rounded-xl border-2 transition-all duration-300 text-left
-                    ${
-                      type === t.value
-                        ? "bg-blue-50 border-blue-500 text-blue-700 shadow-sm"
-                        : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
+                    p-4 rounded-xl border-2 transition-all duration-300 text-left cursor-pointer
+                    ${type === t.value
+                      ? "bg-blue-50 border-blue-500 text-blue-700 shadow-sm"
+                      : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
                     }
                   `}
                 >
@@ -174,11 +173,10 @@ function UploadForm({ onUploadSuccess, onClose }) {
                   type="button"
                   onClick={() => setSubject(s.value)}
                   className={`
-                    p-3 rounded-xl border-2 transition-all duration-300 text-center
-                    ${
-                      subject === s.value
-                        ? `${s.color} text-white border-transparent shadow-sm`
-                        : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
+                    p-3 rounded-xl border-2 transition-all duration-300 text-center cursor-pointer
+                    ${subject === s.value
+                      ? `${s.color} text-white border-transparent shadow-sm`
+                      : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
                     }
                   `}
                 >
@@ -200,11 +198,10 @@ function UploadForm({ onUploadSuccess, onClose }) {
                   type="button"
                   onClick={() => setYear(y.value)}
                   className={`
-                    p-4 rounded-xl border-2 transition-all duration-300 text-center
-                    ${
-                      year === y.value
-                        ? "bg-gray-900 text-white border-gray-900 shadow-sm"
-                        : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
+                    p-4 rounded-xl border-2 transition-all duration-300 text-center cursor-pointer
+                    ${year === y.value
+                      ? "bg-gray-900 text-white border-gray-900 shadow-sm"
+                      : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
                     }
                   `}
                 >
@@ -219,17 +216,15 @@ function UploadForm({ onUploadSuccess, onClose }) {
             <div
               className={`
               p-4 rounded-xl flex items-center space-x-3
-              ${
-                message.includes("success")
+              ${message.includes("success")
                   ? "bg-green-50 text-green-800 border border-green-200"
                   : "bg-red-50 text-red-800 border border-red-200"
-              }
+                }
             `}
             >
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                  message.includes("success") ? "bg-green-500" : "bg-red-500"
-                }`}
+                className={`w-5 h-5 rounded-full flex items-center justify-center ${message.includes("success") ? "bg-green-500" : "bg-red-500"
+                  }`}
               >
                 <svg
                   className="w-3 h-3 text-white"
@@ -259,14 +254,14 @@ function UploadForm({ onUploadSuccess, onClose }) {
               type="button"
               onClick={onClose}
               disabled={uploading}
-              className="flex-1 py-3 px-6 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="flex-1 py-3 px-6 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={uploading}
-              className="flex-1 py-3 px-6 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center space-x-2"
+              className="flex-1 py-3 px-6 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center space-x-2 cursor-pointer"
             >
               {uploading ? (
                 <>

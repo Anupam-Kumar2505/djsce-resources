@@ -88,7 +88,7 @@ function FileAccordion({ files, subjectColors, getFileIcon, getFileName }) {
               {/* Subject Header */}
               <button
                 onClick={() => toggleSubject(subject)}
-                className={`w-full p-5 flex items-center justify-between hover:bg-gray-800/50 transition-all duration-300 group ${colors.border} border-l-4`}
+                className={`w-full p-5 flex items-center justify-between hover:bg-gray-800/50 transition-all duration-300 group ${colors.border} border-l-4 cursor-pointer`}
               >
                 <div className="flex items-center space-x-4">
                   <div

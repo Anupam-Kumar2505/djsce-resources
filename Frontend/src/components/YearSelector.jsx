@@ -16,7 +16,7 @@ function YearSelector({ years, selectedYear, onYearChange }) {
             key={year.value}
             onClick={() => onYearChange(year.value)}
             className={`
-              group relative p-6 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10
+              group relative p-6 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 cursor-pointer
               ${
                 selectedYear === year.value
                   ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25"
