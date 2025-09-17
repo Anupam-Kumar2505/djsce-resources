@@ -41,7 +41,7 @@ function UploadForm({ onUploadSuccess, onClose }) {
 
     setUploading(true);
     setMessage("");
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const formData = new FormData();
 
