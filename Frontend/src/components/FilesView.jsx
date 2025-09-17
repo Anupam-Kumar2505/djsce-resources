@@ -86,7 +86,7 @@ function FilesView({
   };
 
   const handleEditSave = async (fileId) => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const response = await axios.put(
         `${apiUrl}/api/file/${fileId}`,
@@ -112,7 +112,7 @@ function FilesView({
   };
 
   const handleDeleteConfirm = async (fileId) => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const response = await axios.delete(`${apiUrl}/api/file/${fileId}`);
 
