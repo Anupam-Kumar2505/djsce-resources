@@ -41,7 +41,7 @@ function FilesView({
     }, {});
 
     // Sort files within each subject by name (case-insensitive)
-    Object.keys(groups).forEach(subject => {
+    Object.keys(groups).forEach((subject) => {
       groups[subject].sort((a, b) => {
         const nameA = getFileName(a).toLowerCase();
         const nameB = getFileName(b).toLowerCase();

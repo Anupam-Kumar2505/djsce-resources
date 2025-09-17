@@ -41,16 +41,15 @@ function UploadForm({ onUploadSuccess, onClose }) {
 
     setUploading(true);
     setMessage("");
-    const apiUrl =
-      import.meta.env.VITE_API_URL || "http://localhost:5000";
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
     try {
       const formData = new FormData();
-      
+
       // Append all files
       files.forEach((file) => {
         formData.append("files", file);
       });
-      
+
       formData.append("type", type);
       formData.append("subject", subject);
       formData.append("year", year);
@@ -62,14 +61,16 @@ function UploadForm({ onUploadSuccess, onClose }) {
         timeout: 60000, // 1 minute timeout for file uploads
       });
 
-      setMessage(`${response.data.totalUploaded} file(s) uploaded successfully!`);
-      
+      setMessage(
+        `${response.data.totalUploaded} file(s) uploaded successfully!`
+      );
+
       // Reset form
       setFiles([]);
       setType("");
       setSubject("");
       setYear("");
-      
+
       if (onUploadSuccess) {
         onUploadSuccess(response.data);
       }
@@ -129,7 +130,7 @@ function UploadForm({ onUploadSuccess, onClose }) {
                 multiple
                 onChange={(e) => {
                   const selectedFiles = Array.from(e.target.files);
-                  
+
                   if (selectedFiles.length > 10) {
                     setMessage("Maximum 10 files allowed");
                     e.target.value = "";
@@ -137,7 +138,9 @@ function UploadForm({ onUploadSuccess, onClose }) {
                   }
 
                   // Validate all files are PDFs
-                  const invalidFiles = selectedFiles.filter(file => file.type !== "application/pdf");
+                  const invalidFiles = selectedFiles.filter(
+                    (file) => file.type !== "application/pdf"
+                  );
                   if (invalidFiles.length > 0) {
                     setMessage("Only PDF files are allowed");
                     setFiles([]);
@@ -161,13 +164,23 @@ function UploadForm({ onUploadSuccess, onClose }) {
                       {files.length} file(s) selected
                     </h4>
                     <span className="text-xs text-green-600">
-                      Total: {(files.reduce((acc, file) => acc + file.size, 0) / (1024 * 1024)).toFixed(2)} MB
+                      Total:{" "}
+                      {(
+                        files.reduce((acc, file) => acc + file.size, 0) /
+                        (1024 * 1024)
+                      ).toFixed(2)}{" "}
+                      MB
                     </span>
                   </div>
                   <div className="max-h-32 overflow-y-auto space-y-1">
                     {files.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between text-xs">
-                        <span className="text-green-800 truncate flex-1 mr-2">{file.name}</span>
+                      <div
+                        key={index}
+                        className="flex items-center justify-between text-xs"
+                      >
+                        <span className="text-green-800 truncate flex-1 mr-2">
+                          {file.name}
+                        </span>
                         <span className="text-green-600 flex-shrink-0">
                           {(file.size / (1024 * 1024)).toFixed(2)} MB
                         </span>

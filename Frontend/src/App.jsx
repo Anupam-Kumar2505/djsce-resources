@@ -56,9 +56,10 @@ function App() {
     // don't add them to the main view immediately
 
     const fileCount = uploadData.totalUploaded || 1;
-    const message = fileCount === 1 
-      ? "File uploaded successfully! It will appear after admin approval."
-      : `${fileCount} files uploaded successfully! They will appear after admin approval.`;
+    const message =
+      fileCount === 1
+        ? "File uploaded successfully! It will appear after admin approval."
+        : `${fileCount} files uploaded successfully! They will appear after admin approval.`;
 
     // Show notification about approval process
     setNotification({
