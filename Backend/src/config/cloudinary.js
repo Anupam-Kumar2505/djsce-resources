@@ -12,7 +12,7 @@ cloudinary.config({
 
 const uploadOnCloud = async (localFilePath, options = {}) => {
   try {
-    console.log("localFilePath: ", localFilePath);
+   
     if (!localFilePath) {
       return null;
     }
@@ -20,7 +20,7 @@ const uploadOnCloud = async (localFilePath, options = {}) => {
       resource_type: "auto",
       ...options, // Spread additional options
     });
-    console.log("File is uploaded on cloud: ", response.url);
+ 
     fs.unlinkSync(localFilePath);
     return response;
   } catch (error) {

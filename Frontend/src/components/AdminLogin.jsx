@@ -86,7 +86,7 @@ function AdminLogin({ onClose, onLoginSuccess }) {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full p-3 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-colors duration-200"
+              className="w-full p-3 border border-gray-300 rounded-xl text-black focus:border-blue-500 focus:outline-none transition-colors duration-200"
               placeholder="Enter admin username"
             />
           </div>
@@ -101,7 +101,7 @@ function AdminLogin({ onClose, onLoginSuccess }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full p-3 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-colors duration-200"
+              className="w-full p-3 border border-gray-300 text-black rounded-xl focus:border-blue-500 focus:outline-none transition-colors duration-200"
               placeholder="Enter password"
             />
           </div>

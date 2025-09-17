@@ -11,7 +11,8 @@ dotenv.config();
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '15mb' })); // Reasonable limit for API requests
+app.use(express.urlencoded({ extended: true, limit: '15mb' })); // For form data
 
 // MongoDB connection
 mongoose
@@ -19,10 +20,15 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB connection error:", err));
 
+// Add a simple test route
+app.get("/", (req, res) => {
+  res.json({ message: "Backend server is running" });
+});
+
 app.use("/", yearRouter);
 app.use("/api", uploadRouter);
 app.use("/auth", authRouter);
 
-app.listen(5000, () => {
+app.listen(5000, "0.0.0.0", () => {
   console.log("Server is running on port 5000");
 });

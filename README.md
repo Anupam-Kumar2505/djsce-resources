@@ -1,0 +1,1 @@
+To add new subjects, create a pull request for `data.js` and add the subjects in the specified format.

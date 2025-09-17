@@ -1,20 +1,14 @@
 import { useState } from "react";
 import axios from "axios";
+import { years, subjectsByYear } from "../util/data";
 
 function UploadForm({ onUploadSuccess, onClose }) {
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [type, setType] = useState("");
   const [subject, setSubject] = useState("");
   const [year, setYear] = useState("");
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
-
-  const years = [
-    { value: "1", label: "1st Year" },
-    { value: "2", label: "2nd Year" },
-    { value: "3", label: "3rd Year" },
-    { value: "4", label: "4th Year" },
-  ];
 
   const types = [
     { value: "Class Notes", label: "Class Notes" },
@@ -22,33 +16,41 @@ function UploadForm({ onUploadSuccess, onClose }) {
     { value: "Final Papers", label: "Final Papers" },
   ];
 
-  const subjects = [
-    { value: "IOT-POA", label: "IOT-POA", color: "bg-blue-500" },
-    { value: "AI", label: "AI", color: "bg-emerald-500" },
-    { value: "DWM", label: "DWM", color: "bg-violet-500" },
-    { value: "ATCD", label: "ATCD", color: "bg-rose-500" },
-    { value: "ADMS", label: "ADMS", color: "bg-amber-500" },
-    { value: "AA", label: "AA", color: "bg-cyan-500" },
-    { value: "CG", label: "CG", color: "bg-orange-500" },
-    { value: "HONOURS", label: "HONOURS", color: "bg-teal-500" },
-  ];
+  // Get subjects based on selected year
+  const getSubjectsForYear = (selectedYear) => {
+    return subjectsByYear[selectedYear] || [];
+  };
+
+  const handleYearChange = (selectedYear) => {
+    setYear(selectedYear);
+    setSubject(""); // Reset subject when year changes
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!file || !type || !subject || !year) {
-      setMessage("Please fill all fields and select a file");
+    if (!files.length || !type || !subject || !year) {
+      setMessage("Please fill all fields and select at least one file");
+      return;
+    }
+
+    if (files.length > 10) {
+      setMessage("Maximum 10 files allowed per upload");
       return;
     }
 
     setUploading(true);
     setMessage("");
     const apiUrl =
-      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
-
+      import.meta.env.VITE_API_URL || "http://localhost:5000";
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      
+      // Append all files
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+      
       formData.append("type", type);
       formData.append("subject", subject);
       formData.append("year", year);
@@ -57,23 +59,24 @@ function UploadForm({ onUploadSuccess, onClose }) {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        timeout: 60000, // 1 minute timeout for file uploads
       });
 
-      if (response.status === 200) {
-        setMessage("File uploaded successfully!");
-        setFile(null);
-        setType("");
-        setSubject("");
-        setYear("");
-        onUploadSuccess && onUploadSuccess(response.data.file);
-        setTimeout(() => {
-          onClose && onClose();
-        }, 2000);
+      setMessage(`${response.data.totalUploaded} file(s) uploaded successfully!`);
+      
+      // Reset form
+      setFiles([]);
+      setType("");
+      setSubject("");
+      setYear("");
+      
+      if (onUploadSuccess) {
+        onUploadSuccess(response.data);
       }
     } catch (error) {
       console.error("Upload error:", error);
       setMessage(
-        error.response?.data?.error || "Upload failed: " + error.message
+        "Upload failed: " + (error.response?.data?.error || error.message)
       );
     } finally {
       setUploading(false);
@@ -118,19 +121,64 @@ function UploadForm({ onUploadSuccess, onClose }) {
           {/* File Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              File
+              Files (Max 10)
             </label>
             <div className="relative">
               <input
                 type="file"
-                onChange={(e) => setFile(e.target.files[0])}
-                accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png"
+                multiple
+                onChange={(e) => {
+                  const selectedFiles = Array.from(e.target.files);
+                  
+                  if (selectedFiles.length > 10) {
+                    setMessage("Maximum 10 files allowed");
+                    e.target.value = "";
+                    return;
+                  }
+
+                  // Validate all files are PDFs
+                  const invalidFiles = selectedFiles.filter(file => file.type !== "application/pdf");
+                  if (invalidFiles.length > 0) {
+                    setMessage("Only PDF files are allowed");
+                    setFiles([]);
+                    e.target.value = "";
+                    return;
+                  }
+
+                  setFiles(selectedFiles);
+                  setMessage("");
+                }}
+                accept=".pdf"
                 required
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-900 file:text-white file:font-medium hover:file:bg-gray-800 file:cursor-pointer"
               />
             </div>
+            {files.length > 0 && (
+              <div className="mt-3 space-y-2">
+                <div className="p-3 bg-green-50 border border-green-200 rounded-xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-green-800">
+                      {files.length} file(s) selected
+                    </h4>
+                    <span className="text-xs text-green-600">
+                      Total: {(files.reduce((acc, file) => acc + file.size, 0) / (1024 * 1024)).toFixed(2)} MB
+                    </span>
+                  </div>
+                  <div className="max-h-32 overflow-y-auto space-y-1">
+                    {files.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between text-xs">
+                        <span className="text-green-800 truncate flex-1 mr-2">{file.name}</span>
+                        <span className="text-green-600 flex-shrink-0">
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
             <p className="text-xs text-gray-500 mt-2">
-              Supported formats: PDF, DOC, PPT, TXT, Images
+              Select up to 10 PDF files. Only PDF files are allowed.
             </p>
           </div>
 
@@ -147,9 +195,10 @@ function UploadForm({ onUploadSuccess, onClose }) {
                   onClick={() => setType(t.value)}
                   className={`
                     p-4 rounded-xl border-2 transition-all duration-300 text-left cursor-pointer
-                    ${type === t.value
-                      ? "bg-blue-50 border-blue-500 text-blue-700 shadow-sm"
-                      : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
+                    ${
+                      type === t.value
+                        ? "bg-blue-50 border-blue-500 text-blue-700 shadow-sm"
+                        : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
                     }
                   `}
                 >
@@ -159,47 +208,23 @@ function UploadForm({ onUploadSuccess, onClose }) {
             </div>
           </div>
 
-          {/* Subject */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Subject
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {subjects.map((s) => (
-                <button
-                  key={s.value}
-                  type="button"
-                  onClick={() => setSubject(s.value)}
-                  className={`
-                    p-3 rounded-xl border-2 transition-all duration-300 text-center cursor-pointer
-                    ${subject === s.value
-                      ? `${s.color} text-white border-transparent shadow-sm`
-                      : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
-                    }
-                  `}
-                >
-                  <span className="font-medium text-sm">{s.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Year Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Year
+              Year <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
               {years.map((y) => (
                 <button
                   key={y.value}
                   type="button"
-                  onClick={() => setYear(y.value)}
+                  onClick={() => handleYearChange(y.value)}
                   className={`
                     p-4 rounded-xl border-2 transition-all duration-300 text-center cursor-pointer
-                    ${year === y.value
-                      ? "bg-gray-900 text-white border-gray-900 shadow-sm"
-                      : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
+                    ${
+                      year === y.value
+                        ? "bg-gray-900 text-white border-gray-900 shadow-sm"
+                        : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
                     }
                   `}
                 >
@@ -207,22 +232,65 @@ function UploadForm({ onUploadSuccess, onClose }) {
                 </button>
               ))}
             </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Select year first to see available subjects
+            </p>
           </div>
-
+          {/* Subject */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Subject
+            </label>
+            {!year ? (
+              <div className="p-4 bg-gray-100 border-2 border-gray-200 rounded-xl text-center">
+                <p className="text-gray-500 text-sm">
+                  Please select a year first to see available subjects
+                </p>
+              </div>
+            ) : getSubjectsForYear(year).length === 0 ? (
+              <div className="p-4 bg-yellow-50 border-2 border-yellow-200 rounded-xl text-center">
+                <p className="text-yellow-600 text-sm">
+                  No subjects available for this year yet
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {getSubjectsForYear(year).map((s) => (
+                  <button
+                    key={s.value}
+                    type="button"
+                    onClick={() => setSubject(s.value)}
+                    className={`
+                      p-3 rounded-xl border-2 transition-all duration-300 text-center cursor-pointer
+                      ${
+                        subject === s.value
+                          ? `${s.color} text-white border-transparent shadow-sm`
+                          : "bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100"
+                      }
+                    `}
+                  >
+                    <span className="font-medium text-sm">{s.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {/* Message */}
           {message && (
             <div
               className={`
               p-4 rounded-xl flex items-center space-x-3
-              ${message.includes("success")
+              ${
+                message.includes("success")
                   ? "bg-green-50 text-green-800 border border-green-200"
                   : "bg-red-50 text-red-800 border border-red-200"
-                }
+              }
             `}
             >
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center ${message.includes("success") ? "bg-green-500" : "bg-red-500"
-                  }`}
+                className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                  message.includes("success") ? "bg-green-500" : "bg-red-500"
+                }`}
               >
                 <svg
                   className="w-3 h-3 text-white"

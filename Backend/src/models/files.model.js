@@ -23,6 +23,10 @@ const fileSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    isChecked: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

@@ -4,31 +4,38 @@ import UploadForm from "./components/UploadForm";
 import AdminLogin from "./components/AdminLogin";
 import Header from "./components/Header";
 import YearSelector from "./components/YearSelector";
-import FileAccordion from "./components/FileAccordion";
+import FilesView from "./components/FilesView";
+import Notification from "./components/Notification";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { years, subjectColors } from "./util/data";
 
 function App() {
   const [selectedYear, setSelectedYear] = useState("");
   const [files, setFiles] = useState([]);
+  const [pendingFiles, setPendingFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [notification, setNotification] = useState(null);
   const { login } = useAuth();
 
   const fetchFiles = async (year) => {
     setLoading(true);
-    console.log("Fetching files for year:", year);
+
     const url =
       import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+
     try {
       const response = await axios.get(`${url}/year/${year}`);
-      console.log("API Response:", response.data);
+
+      // Set both approved and pending files
       setFiles(response.data.files || []);
+      setPendingFiles(response.data.pendingFiles || []);
     } catch (error) {
       console.error("Error fetching files:", error);
       console.error("Error response:", error.response?.data);
       setFiles([]);
+      setPendingFiles([]);
     } finally {
       setLoading(false);
     }
@@ -40,14 +47,24 @@ function App() {
       fetchFiles(year);
     } else {
       setFiles([]);
+      setPendingFiles([]);
     }
   };
 
-  const handleUploadSuccess = (newFile) => {
-    // If the uploaded file is for the currently selected year, add it to the list
-    if (selectedYear === newFile.year) {
-      setFiles((prevFiles) => [newFile, ...prevFiles]);
-    }
+  const handleUploadSuccess = (uploadData) => {
+    // Since files are now pending approval by default,
+    // don't add them to the main view immediately
+
+    const fileCount = uploadData.totalUploaded || 1;
+    const message = fileCount === 1 
+      ? "File uploaded successfully! It will appear after admin approval."
+      : `${fileCount} files uploaded successfully! They will appear after admin approval.`;
+
+    // Show notification about approval process
+    setNotification({
+      type: "info",
+      message: message,
+    });
   };
 
   const handleFileUpdate = (updatedFile, fileId, action) => {
@@ -61,6 +78,19 @@ function App() {
           file._id === updatedFile.id ? { ...file, ...updatedFile } : file
         )
       );
+    }
+  };
+
+  const handlePendingFileUpdate = (updatedFile, fileId, action) => {
+    if (action === "approve") {
+      // Remove from pending and add to approved
+      setPendingFiles((prev) => prev.filter((file) => file._id !== fileId));
+      if (updatedFile) {
+        setFiles((prev) => [updatedFile, ...prev]);
+      }
+    } else if (action === "reject") {
+      // Remove from pending files
+      setPendingFiles((prev) => prev.filter((file) => file._id !== fileId));
     }
   };
 
@@ -101,28 +131,6 @@ function App() {
     switch (extension) {
       case "pdf":
         return "GrDocumentPdf";
-      case "doc":
-      case "docx":
-        return "GrDocumentWord";
-      case "ppt":
-      case "pptx":
-        return "GrDocument";
-      case "xls":
-      case "xlsx":
-        return "GrDocumentExcel";
-      case "txt":
-        return "GrDocumentText";
-      case "jpg":
-      case "jpeg":
-      case "png":
-      case "gif":
-      case "webp":
-        return "GrDocumentImage";
-      case "zip":
-      case "rar":
-        return "GrDocumentZip";
-      default:
-        return "GrDocument";
     }
   };
 
@@ -162,12 +170,14 @@ function App() {
                 <p className="text-gray-400">Loading resources...</p>
               </div>
             ) : (
-              <FileAccordion
+              <FilesView
                 files={files}
+                pendingFiles={pendingFiles}
                 subjectColors={subjectColors}
                 getFileIcon={getFileIcon}
                 getFileName={getFileName}
                 onFileUpdate={handleFileUpdate}
+                onPendingFileUpdate={handlePendingFileUpdate}
               />
             )}
           </div>
@@ -185,6 +195,15 @@ function App() {
         <AdminLogin
           onLoginSuccess={handleAdminLoginSuccess}
           onClose={() => setShowAdminLogin(false)}
+        />
+      )}
+
+      {/* Notification */}
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
         />
       )}
     </div>

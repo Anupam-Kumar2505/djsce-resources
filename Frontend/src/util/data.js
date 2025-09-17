@@ -53,3 +53,26 @@ export const subjectColors = {
     text: "text-white",
   },
 };
+
+// Year-specific subjects - customize as needed
+export const subjectsByYear = {
+  1: [
+    // Add 1st year subjects here when ready
+  ],
+  2: [
+    // Add 2nd year subjects here when ready
+  ],
+  3: [
+    { value: "IOT-POA", label: "IOT-POA", color: "bg-blue-500" },
+    { value: "AI", label: "AI", color: "bg-emerald-500" },
+    { value: "DWM", label: "DWM", color: "bg-violet-500" },
+    { value: "ATCD", label: "ATCD", color: "bg-rose-500" },
+    { value: "ADMS", label: "ADMS", color: "bg-amber-500" },
+    { value: "AA", label: "AA", color: "bg-cyan-500" },
+    { value: "CG", label: "CG", color: "bg-orange-500" },
+    { value: "HONOURS", label: "HONOURS", color: "bg-teal-500" },
+  ],
+  4: [
+    // Add 4th year subjects here when ready
+  ],
+};
