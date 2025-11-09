@@ -27,9 +27,10 @@ function FilesView({
   const [editingFile, setEditingFile] = useState(null);
   const [editForm, setEditForm] = useState({ name: "" });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [sortBy, setSortBy] = useState("date"); // "name" or "date"
   const { isAdmin } = useAuth();
 
-  // Group files by subject and sort by name within each subject
+  // Group files by subject and sort within each subject based on selected option
   const groupFilesBySubject = (files) => {
     const groups = files.reduce((groups, file) => {
       const subject = file.subject || "Other";
@@ -40,12 +41,20 @@ function FilesView({
       return groups;
     }, {});
 
-    // Sort files within each subject by name (case-insensitive)
+    // Sort files within each subject based on sortBy option
     Object.keys(groups).forEach((subject) => {
       groups[subject].sort((a, b) => {
-        const nameA = getFileName(a).toLowerCase();
-        const nameB = getFileName(b).toLowerCase();
-        return nameA.localeCompare(nameB);
+        if (sortBy === "name") {
+          // Sort by name (case-insensitive, A-Z)
+          const nameA = getFileName(a).toLowerCase();
+          const nameB = getFileName(b).toLowerCase();
+          return nameA.localeCompare(nameB);
+        } else {
+          // Sort by updatedAt (most recent first)
+          const dateA = new Date(a.updatedAt || a.createdAt || 0);
+          const dateB = new Date(b.updatedAt || b.createdAt || 0);
+          return dateB - dateA;
+        }
       });
     });
 
@@ -86,7 +95,8 @@ function FilesView({
   };
 
   const handleEditSave = async (fileId) => {
-    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+    const apiUrl =
+      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const response = await axios.put(
         `${apiUrl}/api/file/${fileId}`,
@@ -112,7 +122,8 @@ function FilesView({
   };
 
   const handleDeleteConfirm = async (fileId) => {
-    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+    const apiUrl =
+      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const response = await axios.delete(`${apiUrl}/api/file/${fileId}`);
 
@@ -135,7 +146,8 @@ function FilesView({
 
   // Pending file approval/rejection handlers
   const handleApprove = async (fileId) => {
-    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+    const apiUrl =
+      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const response = await axios.patch(
         `${apiUrl}/api/file/${fileId}/approve`
@@ -155,7 +167,8 @@ function FilesView({
   };
 
   const handleReject = async (fileId) => {
-    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+    const apiUrl =
+      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const response = await axios.delete(`${apiUrl}/api/file/${fileId}`);
 
@@ -219,6 +232,14 @@ function FilesView({
                     {getFileName(file)}
                   </h5>
                   <p className="text-xs text-gray-400 mt-1">{file.type}</p>
+                  <p className="text-xs mt-1 text-gray-400">
+                    {(() => {
+                      const dateStr = file.updatedAt.split("T")[0];
+                      if (!dateStr) return "";
+                      const [year, month, day] = dateStr.split("-");
+                      return `${day}-${month}-${year}`;
+                    })()}
+                  </p>
                   {isPending && (
                     <p className="text-xs text-orange-400 mt-1">
                       Pending Approval
@@ -520,37 +541,68 @@ function FilesView({
   const pendingFileGroups = groupFilesBySubject(pendingFiles);
 
   return (
-    <div className="flex gap-8">
-      {/* Approved Files Column */}
-      <div className="flex-1">
-        {renderFileSection(approvedFileGroups, false)}
+    <div className="space-y-6">
+      {/* Sort Options */}
+      <div className="flex items-center justify-between bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+        <div className="flex items-center space-x-3">
+          <svg
+            className="w-5 h-5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+            />
+          </svg>
+          <span className="text-sm font-medium text-gray-300">Sort by:</span>
+        </div>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
+        >
+          <option value="date">Date (Most Recent First)</option>
+          <option value="name">Name (A-Z)</option>
+        </select>
       </div>
 
-      {/* Pending Files Column (only visible to admins) */}
-      {isAdmin() && (
+      {/* Files Layout */}
+      <div className="flex gap-8">
+        {/* Approved Files Column */}
         <div className="flex-1">
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
-            <svg
-              className="w-6 h-6 mr-2 text-orange-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
-            Pending Approval
-            <span className="ml-2 px-2 py-1 bg-orange-600 text-white text-xs rounded-full">
-              {pendingFiles.length}
-            </span>
-          </h2>
-          {renderFileSection(pendingFileGroups, true)}
+          {renderFileSection(approvedFileGroups, false)}
         </div>
-      )}
+
+        {/* Pending Files Column (only visible to admins) */}
+        {isAdmin() && (
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+              <svg
+                className="w-6 h-6 mr-2 text-orange-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+              Pending Approval
+              <span className="ml-2 px-2 py-1 bg-orange-600 text-white text-xs rounded-full">
+                {pendingFiles.length}
+              </span>
+            </h2>
+            {renderFileSection(pendingFileGroups, true)}
+          </div>
+        )}
+      </div>
 
       {/* Delete Confirmation Dialog */}
       {deleteConfirm && (
