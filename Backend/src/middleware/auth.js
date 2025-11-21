@@ -1,29 +1,35 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 
-// JWT secret key (in production, this should be in environment variables)
 const JWT_SECRET =
   process.env.JWT_SECRET ||
   "your-super-secret-jwt-key-change-this-in-production";
 
-// Generate JWT token
-export const generateToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, {
-    expiresIn: "7d", // Token expires in 7 days
+export const generateToken = (userId, res) => {
+  const token = jwt.sign({ userId: userId }, JWT_SECRET, {
+    expiresIn: "7d",
   });
+
+  res.cookie("jwt", token, {
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV !== "development",
+  });
+
+  return token;
 };
 
-// Verify JWT token middleware
 export const authenticateToken = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+    const token = req.cookies.jwt;
 
     if (!token) {
       return res.status(401).json({ error: "Access token required" });
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
+
     const user = await User.findById(decoded.userId).select("-password");
 
     if (!user) {
@@ -43,18 +49,25 @@ export const authenticateToken = async (req, res, next) => {
   }
 };
 
-// Check if user is admin middleware
 export const requireAdmin = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ error: "Authentication required" });
   }
 
-  if (!req.user.isAdmin()) {
+  if (req.user.role !== "admin") {
     return res.status(403).json({ error: "Admin access required" });
   }
 
   next();
 };
 
-// Combined middleware for admin routes
+export const requireUser = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  next();
+};
+
 export const authenticateAdmin = [authenticateToken, requireAdmin];
+export const authenticateUser = [authenticateToken, requireUser];

@@ -12,15 +12,14 @@ cloudinary.config({
 
 const uploadOnCloud = async (localFilePath, options = {}) => {
   try {
-   
     if (!localFilePath) {
       return null;
     }
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
-      ...options, // Spread additional options
+      ...options,
     });
- 
+
     fs.unlinkSync(localFilePath);
     return response;
   } catch (error) {

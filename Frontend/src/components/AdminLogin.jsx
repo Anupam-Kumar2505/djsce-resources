@@ -26,7 +26,6 @@ function AdminLogin({ onClose, onLoginSuccess }) {
       });
 
       if (response.data.user.role === "admin") {
-        // Store token and user info
         localStorage.setItem("adminToken", response.data.token);
         localStorage.setItem("adminUser", JSON.stringify(response.data.user));
 
@@ -48,7 +47,6 @@ function AdminLogin({ onClose, onLoginSuccess }) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-        {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-100">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Admin Login</h2>
@@ -74,9 +72,7 @@ function AdminLogin({ onClose, onLoginSuccess }) {
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Username */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Username
@@ -91,7 +87,6 @@ function AdminLogin({ onClose, onLoginSuccess }) {
             />
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Password
@@ -106,7 +101,6 @@ function AdminLogin({ onClose, onLoginSuccess }) {
             />
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="p-3 rounded-xl bg-red-50 text-red-800 border border-red-200 flex items-center space-x-2">
               <svg
@@ -126,7 +120,6 @@ function AdminLogin({ onClose, onLoginSuccess }) {
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex space-x-3 pt-4">
             <button
               type="button"

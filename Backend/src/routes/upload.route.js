@@ -3,13 +3,12 @@ import multer from "multer";
 import uploadOnCloud from "../config/cloudinary.js";
 import { v2 as cloudinary } from "cloudinary";
 import File from "../models/files.model.js";
-import { authenticateAdmin } from "../middleware/auth.js";
+import { authenticateAdmin, authenticateUser } from "../middleware/auth.js";
 import fs from "fs";
 import path from "path";
 
 const router = express.Router();
 
-// Configure multer for file uploads to disk temporarily
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadDir = "./temp";
@@ -26,11 +25,10 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit to match Cloudinary free plan
+    fileSize: 10 * 1024 * 1024,
   },
 });
 
-// Update file name endpoint
 router.patch("/files/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -67,9 +65,9 @@ router.patch("/files/:id", async (req, res) => {
   }
 });
 
-// Upload file endpoint - supports multiple files (up to 10)
 router.post(
   "/upload",
+  authenticateUser,
   (req, res, next) => {
     upload.array("files", 10)(req, res, (err) => {
       if (err instanceof multer.MulterError) {
@@ -124,7 +122,6 @@ router.post(
       const uploadResults = [];
       const errors = [];
 
-      // Process each file
       for (let i = 0; i < req.files.length; i++) {
         const file = req.files[i];
         console.log(
@@ -133,7 +130,6 @@ router.post(
         );
 
         try {
-          // Upload to Cloudinary using the uploadOnCloud function
           const originalNameWithoutExt = path.parse(file.originalname).name;
           const fileExtension = path.extname(file.originalname);
 
@@ -146,8 +142,8 @@ router.post(
 
           const uploadOptions = {
             folder: `djsce_resources/year_${year}`,
-            public_id: originalNameWithoutExt, // Use exact original filename without timestamp
-            resource_type: "auto", // This handles different file types automatically
+            public_id: originalNameWithoutExt,
+            resource_type: "auto",
           };
 
           console.log("Uploading to Cloudinary with options:", uploadOptions);
@@ -166,14 +162,13 @@ router.post(
           }
 
           console.log("Saving to MongoDB...");
-          // Save to MongoDB
           const newFile = new File({
             fileUrl: uploadResult.secure_url,
             name: file.originalname,
             type: type,
             subject: subject,
             year: year,
-            isChecked: false, // Requires admin approval
+            isChecked: false,
           });
 
           await newFile.save();
@@ -188,7 +183,6 @@ router.post(
             year: newFile.year,
           });
 
-          // Clean up temp file
           if (fs.existsSync(file.path)) {
             fs.unlinkSync(file.path);
           }
@@ -198,14 +192,12 @@ router.post(
             `Failed to upload ${file.originalname}: ${fileError.message}`
           );
 
-          // Clean up temp file even on error
           if (file.path && fs.existsSync(file.path)) {
             fs.unlinkSync(file.path);
           }
         }
       }
 
-      // Response based on results
       if (uploadResults.length === 0) {
         return res.status(500).json({
           error: "All file uploads failed",
@@ -228,7 +220,7 @@ router.post(
       res.json(response);
     } catch (error) {
       console.error("Upload error:", error);
-      // Clean up temp files if they exist
+
       if (req.files) {
         req.files.forEach((file) => {
           if (file.path && fs.existsSync(file.path)) {
@@ -241,7 +233,6 @@ router.post(
   }
 );
 
-// Delete file endpoint (admin only)
 router.delete("/file/:id", authenticateAdmin, async (req, res) => {
   try {
     const fileId = req.params.id;
@@ -251,38 +242,33 @@ router.delete("/file/:id", authenticateAdmin, async (req, res) => {
       return res.status(404).json({ error: "File not found" });
     }
 
-    // Extract Cloudinary public_id from URL
-    // Cloudinary URL format: https://res.cloudinary.com/[cloud_name]/[resource_type]/upload/[folder]/[public_id].[extension]
     let cloudinaryDeletionSuccessful = false;
 
     try {
       const urlParts = file.fileUrl.split("/");
       const fileNameWithExtension = urlParts[urlParts.length - 1];
-      // Decode URL-encoded characters (like %20 for spaces) back to original characters
+
       const decodedFileNameWithExtension = decodeURIComponent(
         fileNameWithExtension
       );
       const fileNameWithoutExtension =
-        decodedFileNameWithExtension.split(".")[0]; // Remove extension
+        decodedFileNameWithExtension.split(".")[0];
 
-      // Find the folder path starting from after 'upload'
       const uploadIndex = urlParts.findIndex((part) => part === "upload");
       if (uploadIndex !== -1 && uploadIndex < urlParts.length - 2) {
-        // Skip the version part (v[timestamp]) and get folder + filename
         let folderStartIndex = uploadIndex + 1;
 
-        // Check if next part after upload is version (starts with 'v' followed by numbers)
         if (
           urlParts[folderStartIndex] &&
           /^v\d+$/.test(urlParts[folderStartIndex])
         ) {
-          folderStartIndex += 1; // Skip version part
+          folderStartIndex += 1;
         }
 
-        const folderParts = urlParts.slice(folderStartIndex, -1); // Exclude the filename
+        const folderParts = urlParts.slice(folderStartIndex, -1);
         const fullPublicId = [...folderParts, fileNameWithoutExtension].join(
           "/"
-        ); // Use filename WITHOUT extension
+        );
 
         console.log("=== CLOUDINARY DEBUG ===");
         console.log("Original file URL:", file.fileUrl);
@@ -304,16 +290,13 @@ router.delete("/file/:id", authenticateAdmin, async (req, res) => {
           fullPublicId
         );
 
-        // Delete from Cloudinary
         const cloudinaryResult = await cloudinary.uploader.destroy(
           fullPublicId
         );
 
-        // Check if deletion was successful
         if (cloudinaryResult.result === "ok") {
           cloudinaryDeletionSuccessful = true;
         } else if (cloudinaryResult.result === "not found") {
-          // File not found in Cloudinary, but we can still proceed with DB deletion
           console.warn(
             "File not found in Cloudinary, proceeding with database deletion"
           );
@@ -335,7 +318,6 @@ router.delete("/file/:id", authenticateAdmin, async (req, res) => {
       });
     }
 
-    // Only proceed with database deletion if Cloudinary deletion was successful
     if (!cloudinaryDeletionSuccessful) {
       return res.status(500).json({
         error:
@@ -343,7 +325,6 @@ router.delete("/file/:id", authenticateAdmin, async (req, res) => {
       });
     }
 
-    // Delete from database
     await File.findByIdAndDelete(fileId);
 
     res.json({
@@ -361,7 +342,6 @@ router.delete("/file/:id", authenticateAdmin, async (req, res) => {
   }
 });
 
-// Update file name endpoint (admin only)
 router.put("/file/:id", authenticateAdmin, async (req, res) => {
   try {
     const fileId = req.params.id;
@@ -379,7 +359,6 @@ router.put("/file/:id", authenticateAdmin, async (req, res) => {
       return res.status(404).json({ error: "File not found" });
     }
 
-    // Update only provided fields
     const updateFields = {};
     if (name) updateFields.name = name.trim();
     if (subject) updateFields.subject = subject.trim();
@@ -407,7 +386,6 @@ router.put("/file/:id", authenticateAdmin, async (req, res) => {
   }
 });
 
-// Approve file endpoint (admin only) - Only handles approvals
 router.patch("/file/:id/approve", authenticateAdmin, async (req, res) => {
   try {
     const fileId = req.params.id;
@@ -441,7 +419,6 @@ router.patch("/file/:id/approve", authenticateAdmin, async (req, res) => {
   }
 });
 
-// Test Cloudinary deletion endpoint
 router.post("/test-cloudinary-delete", async (req, res) => {
   try {
     const { publicId } = req.body;
@@ -453,12 +430,10 @@ router.post("/test-cloudinary-delete", async (req, res) => {
     console.log("=== TESTING CLOUDINARY DELETION ===");
     console.log("Original publicId input:", publicId);
 
-    // Test URL decoding (like we do in actual deletion)
     const decodedPublicId = decodeURIComponent(publicId);
     console.log("Decoded publicId:", decodedPublicId);
     console.log("Are they different?", publicId !== decodedPublicId);
 
-    // Test deletion with decoded publicId
     const result = await cloudinary.uploader.destroy(decodedPublicId);
     console.log("Cloudinary deletion result:", result);
     console.log("=== END TEST ===");

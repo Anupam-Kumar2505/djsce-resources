@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
+// Configure axios to send cookies with all requests
+axios.defaults.withCredentials = true;
+
 const AuthContext = createContext();
 
 export const useAuth = () => {
@@ -16,52 +19,52 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user and token from localStorage on app start
   useEffect(() => {
-    const savedToken = localStorage.getItem("adminToken");
-    const savedUser = localStorage.getItem("adminUser");
-
-    if (savedToken && savedUser) {
+    const checkAuth = async () => {
       try {
-        const parsedUser = JSON.parse(savedUser);
-        setToken(savedToken);
-        setUser(parsedUser);
+        const url =
+          import.meta.env.VITE_API_URL ||
+          "https://djsce-resources.onrender.com";
+        const response = await axios.get(`${url}/auth/verify`, {
+          withCredentials: true,
+        });
 
-        // Set default authorization header for axios
-        axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
+        if (response.data.user) {
+          setUser(response.data.user);
+          setToken(response.data.token);
+        }
       } catch (error) {
-        console.error("Error parsing saved user data:", error);
-        // Clear invalid data
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminUser");
+        console.log("No valid session found");
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    setLoading(false);
+    checkAuth();
   }, []);
 
   const login = (userData, userToken) => {
     setUser(userData);
     setToken(userToken);
-
-    // Save to localStorage
-    localStorage.setItem("adminToken", userToken);
-    localStorage.setItem("adminUser", JSON.stringify(userData));
-
-    // Set default authorization header for future requests
-    axios.defaults.headers.common["Authorization"] = `Bearer ${userToken}`;
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-
-    // Clear localStorage
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUser");
-
-    // Remove authorization header
-    delete axios.defaults.headers.common["Authorization"];
+  const logout = async () => {
+    try {
+      const url =
+        import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+      await axios.post(
+        `${url}/auth/logout`,
+        {},
+        {
+          withCredentials: true,
+        }
+      );
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setUser(null);
+      setToken(null);
+    }
   };
 
   const isAdmin = () => {

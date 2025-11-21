@@ -2,25 +2,38 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors";
-import yearRouter from "./routes/year.route.js";
+import cookieParser from "cookie-parser";
+import yearRouter from "./routes/file.route.js";
 import uploadRouter from "./routes/upload.route.js";
 import authRouter from "./routes/auth.route.js";
+import userRouter from "./routes/user.route.js";
 
 dotenv.config();
 
 const app = express();
 
-app.use(cors());
-app.use(express.json({ limit: '15mb' })); // Reasonable limit for API requests
-app.use(express.urlencoded({ extended: true, limit: '15mb' })); // For form data
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://djsce-resources.onrender.com",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+  })
+);
+app.use(cookieParser());
+app.use(express.json({ limit: "15mb" }));
 
-// MongoDB connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log("MongoDB connection error:", err));
+try {
+  const conn = await mongoose.connect(process.env.MONGO_URI);
+  console.log(`MongoDB connected: ${conn.connection.host}`);
+} catch (error) {
+  console.error(`Error connecting to MongoDB: ${error}`);
+}
 
-// Add a simple test route
 app.get("/", (req, res) => {
   res.json({ message: "Backend server is running" });
 });
@@ -28,6 +41,7 @@ app.get("/", (req, res) => {
 app.use("/", yearRouter);
 app.use("/api", uploadRouter);
 app.use("/auth", authRouter);
+app.use("/api/users", userRouter);
 
 app.listen(5000, "0.0.0.0", () => {
   console.log("Server is running on port 5000");

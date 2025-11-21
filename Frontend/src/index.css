@@ -13,6 +13,15 @@
     color: #ffffff;
     min-height: 100vh;
   }
+
+  html {
+    background-color: #000000;
+  }
+
+  #root {
+    background-color: #000000;
+    min-height: 100vh;
+  }
 }
 
 @layer utilities {

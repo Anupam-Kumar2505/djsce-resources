@@ -27,10 +27,9 @@ function FilesView({
   const [editingFile, setEditingFile] = useState(null);
   const [editForm, setEditForm] = useState({ name: "" });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [sortBy, setSortBy] = useState("date"); // "name" or "date"
+  const [sortBy, setSortBy] = useState("date");
   const { isAdmin } = useAuth();
 
-  // Group files by subject and sort within each subject based on selected option
   const groupFilesBySubject = (files) => {
     const groups = files.reduce((groups, file) => {
       const subject = file.subject || "Other";
@@ -41,16 +40,13 @@ function FilesView({
       return groups;
     }, {});
 
-    // Sort files within each subject based on sortBy option
     Object.keys(groups).forEach((subject) => {
       groups[subject].sort((a, b) => {
         if (sortBy === "name") {
-          // Sort by name (case-insensitive, A-Z)
           const nameA = getFileName(a).toLowerCase();
           const nameB = getFileName(b).toLowerCase();
           return nameA.localeCompare(nameB);
         } else {
-          // Sort by updatedAt (most recent first)
           const dateA = new Date(a.updatedAt || a.createdAt || 0);
           const dateB = new Date(b.updatedAt || b.createdAt || 0);
           return dateB - dateA;
@@ -61,7 +57,6 @@ function FilesView({
     return groups;
   };
 
-  // Toggle accordion section
   const toggleSubject = (subject, isPending = false) => {
     const targetSet = isPending ? expandedPendingSubjects : expandedSubjects;
     const setterFunction = isPending
@@ -81,7 +76,6 @@ function FilesView({
     return subjectColors[subject] || subjectColors.default;
   };
 
-  // Admin functions for file management
   const handleEditClick = (file) => {
     setEditingFile(file._id);
     setEditForm({
@@ -144,7 +138,6 @@ function FilesView({
     setDeleteConfirm(null);
   };
 
-  // Pending file approval/rejection handlers
   const handleApprove = async (fileId) => {
     const apiUrl =
       import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
@@ -200,10 +193,7 @@ function FilesView({
     const colors = getSubjectColor(file.subject);
 
     return (
-      <div
-        key={file._id}
-        className={`bg-gray-900/50 border ${colors.border} rounded-lg p-5 hover:border-gray-600 hover:bg-gray-800/50 transition-all duration-300 group backdrop-blur-sm`}
-      >
+      <div key={file._id} className={`bg-gray-900 border ${colors.border} p-4`}>
         <div className="text-center flex justify-between items-center">
           <div className="ml-4 flex items-center gap-5 flex-1">
             <IconComponent color="white" size={35} />
@@ -298,11 +288,9 @@ function FilesView({
                   <span>View</span>
                 </a>
 
-                {/* Admin Controls */}
                 {isAdmin() && (
                   <>
                     {isPending ? (
-                      // Approval controls for pending files
                       <>
                         <button
                           onClick={() => handleApprove(file._id)}
@@ -346,7 +334,6 @@ function FilesView({
                         </button>
                       </>
                     ) : (
-                      // Edit/Delete controls for approved files
                       <>
                         <button
                           onClick={() => handleEditClick(file)}
@@ -461,7 +448,6 @@ function FilesView({
               key={subject}
               className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden backdrop-blur-sm"
             >
-              {/* Subject Header */}
               <button
                 onClick={() => toggleSubject(subject, isPending)}
                 className={`w-full p-5 flex items-center justify-between hover:bg-gray-800/50 transition-all duration-300 group ${colors.border} border-l-4 cursor-pointer`}
@@ -520,7 +506,6 @@ function FilesView({
                 </div>
               </button>
 
-              {/* Subject Files */}
               {isExpanded && (
                 <div className="p-6 border-t border-gray-800 bg-gray-950/30">
                   <div className="space-y-4">
@@ -542,7 +527,6 @@ function FilesView({
 
   return (
     <div className="space-y-6">
-      {/* Sort Options */}
       <div className="flex items-center justify-between bg-gray-900/50 border border-gray-700 rounded-lg p-4">
         <div className="flex items-center space-x-3">
           <svg
@@ -570,14 +554,11 @@ function FilesView({
         </select>
       </div>
 
-      {/* Files Layout */}
       <div className="flex gap-8">
-        {/* Approved Files Column */}
         <div className="flex-1">
           {renderFileSection(approvedFileGroups, false)}
         </div>
 
-        {/* Pending Files Column (only visible to admins) */}
         {isAdmin() && (
           <div className="flex-1">
             <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
@@ -604,7 +585,6 @@ function FilesView({
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">

@@ -5,7 +5,6 @@ export const years = [
   { value: "4", label: "4th Year", icon: "4️⃣" },
 ];
 
-// Color mapping for subjects
 export const subjectColors = {
   "IOT-POA": {
     bg: "bg-blue-500/80",
@@ -54,14 +53,9 @@ export const subjectColors = {
   },
 };
 
-// Year-specific subjects - customize as needed
 export const subjectsByYear = {
-  1: [
-    // Add 1st year subjects here when ready
-  ],
-  2: [
-    // Add 2nd year subjects here when ready
-  ],
+  1: [],
+  2: [],
   3: [
     { value: "IOT-POA", label: "IOT-POA", color: "bg-blue-500" },
     { value: "AI", label: "AI", color: "bg-emerald-500" },
@@ -72,7 +66,5 @@ export const subjectsByYear = {
     { value: "CG", label: "CG", color: "bg-orange-500" },
     { value: "HONOURS", label: "HONOURS", color: "bg-teal-500" },
   ],
-  4: [
-    // Add 4th year subjects here when ready
-  ],
+  4: [],
 };
