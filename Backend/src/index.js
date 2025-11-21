@@ -18,6 +18,7 @@ app.use(
       "http://localhost:5173",
       "http://localhost:3000",
       "https://djsce-resources.onrender.com",
+      "https://djsce-resources.vercel.app",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
