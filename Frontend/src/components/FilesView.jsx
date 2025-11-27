@@ -27,9 +27,10 @@ function FilesView({
   const [editingFile, setEditingFile] = useState(null);
   const [editForm, setEditForm] = useState({ name: "" });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [sortBy, setSortBy] = useState("date");
+  const [sortBy, setSortBy] = useState("date"); // "name" or "date"
   const { isAdmin } = useAuth();
 
+  // Group files by subject and sort within each subject based on selected option
   const groupFilesBySubject = (files) => {
     const groups = files.reduce((groups, file) => {
       const subject = file.subject || "Other";
@@ -40,13 +41,16 @@ function FilesView({
       return groups;
     }, {});
 
+    // Sort files within each subject based on sortBy option
     Object.keys(groups).forEach((subject) => {
       groups[subject].sort((a, b) => {
         if (sortBy === "name") {
+          // Sort by name (case-insensitive, A-Z)
           const nameA = getFileName(a).toLowerCase();
           const nameB = getFileName(b).toLowerCase();
           return nameA.localeCompare(nameB);
         } else {
+          // Sort by updatedAt (most recent first)
           const dateA = new Date(a.updatedAt || a.createdAt || 0);
           const dateB = new Date(b.updatedAt || b.createdAt || 0);
           return dateB - dateA;
@@ -89,8 +93,7 @@ function FilesView({
   };
 
   const handleEditSave = async (fileId) => {
-    const apiUrl =
-      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const response = await axios.put(
         `${apiUrl}/api/file/${fileId}`,
@@ -116,8 +119,7 @@ function FilesView({
   };
 
   const handleDeleteConfirm = async (fileId) => {
-    const apiUrl =
-      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const response = await axios.delete(`${apiUrl}/api/file/${fileId}`);
 
@@ -139,8 +141,7 @@ function FilesView({
   };
 
   const handleApprove = async (fileId) => {
-    const apiUrl =
-      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const response = await axios.patch(
         `${apiUrl}/api/file/${fileId}/approve`
@@ -160,8 +161,7 @@ function FilesView({
   };
 
   const handleReject = async (fileId) => {
-    const apiUrl =
-      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const response = await axios.delete(`${apiUrl}/api/file/${fileId}`);
 
@@ -222,14 +222,6 @@ function FilesView({
                     {getFileName(file)}
                   </h5>
                   <p className="text-xs text-gray-400 mt-1">{file.type}</p>
-                  <p className="text-xs mt-1 text-gray-400">
-                    {(() => {
-                      const dateStr = file.updatedAt.split("T")[0];
-                      if (!dateStr) return "";
-                      const [year, month, day] = dateStr.split("-");
-                      return `${day}-${month}-${year}`;
-                    })()}
-                  </p>
                   {isPending && (
                     <p className="text-xs text-orange-400 mt-1">
                       Pending Approval
@@ -527,6 +519,7 @@ function FilesView({
 
   return (
     <div className="space-y-6">
+      {/* Sort Options */}
       <div className="flex items-center justify-between bg-gray-900/50 border border-gray-700 rounded-lg p-4">
         <div className="flex items-center space-x-3">
           <svg
@@ -554,11 +547,14 @@ function FilesView({
         </select>
       </div>
 
+      {/* Files Layout */}
       <div className="flex gap-8">
+        {/* Approved Files Column */}
         <div className="flex-1">
           {renderFileSection(approvedFileGroups, false)}
         </div>
 
+        {/* Pending Files Column (only visible to admins) */}
         {isAdmin() && (
           <div className="flex-1">
             <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
