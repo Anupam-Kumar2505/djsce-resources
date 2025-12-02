@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import yearRouter from "./routes/year.route.js";
 import uploadRouter from "./routes/upload.route.js";
 import authRouter from "./routes/auth.route.js";
