@@ -16,13 +16,14 @@ function UploadForm({ onUploadSuccess, onClose }) {
     { value: "Final Papers", label: "Final Papers" },
   ];
 
+  // Get subjects based on selected year
   const getSubjectsForYear = (selectedYear) => {
     return subjectsByYear[selectedYear] || [];
   };
 
   const handleYearChange = (selectedYear) => {
     setYear(selectedYear);
-    setSubject("");
+    setSubject(""); // Reset subject when year changes
   };
 
   const handleSubmit = async (e) => {
@@ -40,11 +41,11 @@ function UploadForm({ onUploadSuccess, onClose }) {
 
     setUploading(true);
     setMessage("");
-    const apiUrl =
-      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const formData = new FormData();
 
+      // Append all files
       files.forEach((file) => {
         formData.append("files", file);
       });
@@ -57,13 +58,14 @@ function UploadForm({ onUploadSuccess, onClose }) {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        timeout: 60000,
+        timeout: 60000, // 1 minute timeout for file uploads
       });
 
       setMessage(
         `${response.data.totalUploaded} file(s) uploaded successfully!`
       );
 
+      // Reset form
       setFiles([]);
       setType("");
       setSubject("");
@@ -83,18 +85,41 @@ function UploadForm({ onUploadSuccess, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center p-4 border-b border-gray-200">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b border-gray-100">
           <div>
-            <h2 className="text-lg text-gray-900">Upload Resource</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Upload Resource
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Add a new study material to the collection
+            </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 cursor-pointer">
-            ×
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200 text-gray-400 hover:text-gray-600 cursor-pointer"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* File Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Files (Max 10)
@@ -112,6 +137,7 @@ function UploadForm({ onUploadSuccess, onClose }) {
                     return;
                   }
 
+                  // Validate all files are PDFs
                   const invalidFiles = selectedFiles.filter(
                     (file) => file.type !== "application/pdf"
                   );
@@ -169,6 +195,7 @@ function UploadForm({ onUploadSuccess, onClose }) {
             </p>
           </div>
 
+          {/* Type/Category */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Type/Category
@@ -194,6 +221,7 @@ function UploadForm({ onUploadSuccess, onClose }) {
             </div>
           </div>
 
+          {/* Year Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Year <span className="text-red-500">*</span>
@@ -221,6 +249,7 @@ function UploadForm({ onUploadSuccess, onClose }) {
               Select year first to see available subjects
             </p>
           </div>
+          {/* Subject */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Subject
@@ -259,6 +288,7 @@ function UploadForm({ onUploadSuccess, onClose }) {
               </div>
             )}
           </div>
+          {/* Message */}
           {message && (
             <div
               className={`
@@ -297,7 +327,8 @@ function UploadForm({ onUploadSuccess, onClose }) {
             </div>
           )}
 
-          <div className="flex space-x-3 pt-6">
+          {/* Actions */}
+          <div className="flex space-x-3 pt-4">
             <button
               type="button"
               onClick={onClose}

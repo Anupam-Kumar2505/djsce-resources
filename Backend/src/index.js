@@ -2,11 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors";
-import cookieParser from "cookie-parser";
-import yearRouter from "./routes/file.route.js";
+import yearRouter from "./routes/year.route.js";
 import uploadRouter from "./routes/upload.route.js";
 import authRouter from "./routes/auth.route.js";
-import userRouter from "./routes/user.route.js";
 
 dotenv.config();
 
@@ -28,13 +26,13 @@ app.use(
 app.use(cookieParser());
 app.use(express.json({ limit: "15mb" }));
 
-try {
-  const conn = await mongoose.connect(process.env.MONGO_URI);
-  console.log(`MongoDB connected: ${conn.connection.host}`);
-} catch (error) {
-  console.error(`Error connecting to MongoDB: ${error}`);
-}
+// MongoDB connection
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.log("MongoDB connection error:", err));
 
+// Add a simple test route
 app.get("/", (req, res) => {
   res.json({ message: "Backend server is running" });
 });
@@ -42,7 +40,6 @@ app.get("/", (req, res) => {
 app.use("/", yearRouter);
 app.use("/api", uploadRouter);
 app.use("/auth", authRouter);
-app.use("/api/users", userRouter);
 
 app.listen(5000, "0.0.0.0", () => {
   console.log("Server is running on port 5000");
