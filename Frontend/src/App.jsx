@@ -25,9 +25,15 @@ function App() {
     const url =
       import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
 
-    try {
-      const response = await axios.get(`${url}/year/${year}`);
+    console.log("Environment VITE_API_URL:", import.meta.env.VITE_API_URL);
+    console.log(`Fetching files from: ${url}/year/${year}`);
 
+    try {
+      const response = await axios.get(`${url}/year/${year}`, {
+        withCredentials: true,
+      });
+
+      console.log("Files response:", response.data);
       // Set both approved and pending files
       setFiles(response.data.files || []);
       setPendingFiles(response.data.pendingFiles || []);

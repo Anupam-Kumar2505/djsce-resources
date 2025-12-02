@@ -564,7 +564,7 @@ function FilesView({
         <div className="flex-1">
           <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
             <svg
-              className="w-6 h-6 mr-2 text-orange-400"
+              className="w-6 h-6 mr-2 text-green-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -573,15 +573,15 @@ function FilesView({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                d="M5 13l4 4L19 7"
               />
             </svg>
-            Pending Approval
-            <span className="ml-2 px-2 py-1 bg-orange-600 text-white text-xs rounded-full">
-              {pendingFiles.length}
+            Approved Files
+            <span className="ml-2 px-2 py-1 bg-green-600 text-white text-xs rounded-full">
+              {files.length}
             </span>
           </h2>
-          {renderFileSection(pendingFileGroups, true)}
+          {renderFileSection(approvedFileGroups, false)}
         </div>
 
         {/* Pending Files Column (only visible to admins) */}

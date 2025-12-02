@@ -17,8 +17,7 @@ function AdminLogin({ onClose, onLoginSuccess }) {
 
     setLoading(true);
     setError("");
-    const apiUrl =
-      import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
     try {
       const response = await axios.post(`${apiUrl}/auth/login`, {
         username: username.trim(),

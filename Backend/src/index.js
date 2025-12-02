@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import yearRouter from "./routes/year.route.js";
+import fileRouter from "./routes/year.route.js";
 import uploadRouter from "./routes/upload.route.js";
 import authRouter from "./routes/auth.route.js";
 
@@ -38,7 +38,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Backend server is running" });
 });
 
-app.use("/", yearRouter);
+app.use("/", fileRouter);
 app.use("/api", uploadRouter);
 app.use("/auth", authRouter);
 

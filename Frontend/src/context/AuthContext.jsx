@@ -22,11 +22,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const url =
-          import.meta.env.VITE_API_URL ||
-          (window.location.hostname === "localhost"
-            ? "http://localhost:5000"
-            : "https://djsce-resources.onrender.com");
+        const url = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
         const response = await axios.get(`${url}/auth/verify`, {
           withCredentials: true,
         });
@@ -52,8 +48,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const url = import.meta.env.VITE_API_URL || 
-        (window.location.hostname === 'localhost' ? "http://localhost:5000" : "https://djsce-resources.onrender.com");
+      const url = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
       await axios.post(
         `${url}/auth/logout`,
         {},
