@@ -1,43 +1,41 @@
 import { useState } from "react";
 import axios from "axios";
 
-function AdminLogin({ onClose, onLoginSuccess }) {
+function AdminLogin({ onClose, onSuccess }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const getApiUrl = () =>
+    import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!username.trim() || !password) {
-      setError("Please enter both username and password");
-      return;
-    }
-
-    setLoading(true);
     setError("");
-    const apiUrl = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
+    setLoading(true);
+
     try {
-      const response = await axios.post(`${apiUrl}/auth/login`, {
-        username: username.trim(),
-        password,
-      });
+      const response = await axios.post(
+        `${getApiUrl()}/api/auth/login`,
+        {
+          username,
+          password,
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
-      if (response.data.user.role === "admin") {
-        // Store token and user info
-        localStorage.setItem("adminToken", response.data.token);
-        localStorage.setItem("adminUser", JSON.stringify(response.data.user));
-
-        onLoginSuccess(response.data.user, response.data.token);
-        onClose();
+      if (response.data.success) {
+        onSuccess(response.data.user, response.data.token);
       } else {
-        setError("Admin access required");
+        setError(response.data.error || "Login failed");
       }
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (err) {
+      console.error("Login error:", err);
       setError(
-        error.response?.data?.error || "Login failed. Please try again."
+        err.response?.data?.error || "Login failed. Please check your credentials."
       );
     } finally {
       setLoading(false);
@@ -45,39 +43,32 @@ function AdminLogin({ onClose, onLoginSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-line animate-[fadeIn_0.3s_ease-in-out]">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-100">
+        <div className="flex justify-between items-center p-6 border-b border-line">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Admin Login</h2>
-            <p className="text-sm text-gray-500 mt-1">Access admin controls</p>
+            <h2 className="text-xl font-bold text-ink font-['Sora']">
+              Admin Login
+            </h2>
+            <p className="text-xs text-ink-dim mt-1">
+              Resource moderation &amp; file verification
+            </p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200 text-gray-400 hover:text-gray-600"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-bg text-ink-dim hover:text-ink transition-colors cursor-pointer"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Username */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-ink mb-1.5">
               Username
             </label>
             <input
@@ -85,14 +76,13 @@ function AdminLogin({ onClose, onLoginSuccess }) {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full p-3 border border-gray-300 rounded-xl text-black focus:border-blue-500 focus:outline-none transition-colors duration-200"
-              placeholder="Enter admin username"
+              className="w-full px-4 py-3 border border-line rounded-xl text-sm text-ink focus:outline-none focus:border-violet bg-white"
+              placeholder="Admin username"
             />
           </div>
 
-          {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-ink mb-1.5">
               Password
             </label>
             <input
@@ -100,69 +90,35 @@ function AdminLogin({ onClose, onLoginSuccess }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full p-3 border border-gray-300 text-black rounded-xl focus:border-blue-500 focus:outline-none transition-colors duration-200"
-              placeholder="Enter password"
+              className="w-full px-4 py-3 border border-line rounded-xl text-sm text-ink focus:outline-none focus:border-violet bg-white"
+              placeholder="••••••••"
             />
           </div>
 
-          {/* Error Message */}
           {error && (
-            <div className="p-3 rounded-xl bg-red-50 text-red-800 border border-red-200 flex items-center space-x-2">
-              <svg
-                className="w-5 h-5 text-red-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
+            <div className="p-3.5 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 text-xs font-semibold flex items-center gap-2">
+              <svg className="w-4 h-4 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
-              <span className="text-sm font-medium">{error}</span>
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex space-x-3 pt-4">
+          <div className="flex gap-3 pt-3">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 py-3 px-6 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="flex-1 py-3.5 px-5 rounded-xl border border-line text-sm font-semibold text-ink hover:bg-bg transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-3 px-6 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center space-x-2"
+              className="flex-1 py-3.5 px-5 rounded-xl bg-gradient-to-r from-violet via-blue to-cyan text-white text-sm font-semibold hover:brightness-105 active:scale-95 transition-all shadow-md cursor-pointer disabled:opacity-50"
             >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Logging in...</span>
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                    />
-                  </svg>
-                  <span>Login</span>
-                </>
-              )}
+              {loading ? "Signing in..." : "Login"}
             </button>
           </div>
         </form>

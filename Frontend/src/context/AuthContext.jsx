@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
@@ -31,7 +32,7 @@ export const AuthProvider = ({ children }) => {
           setUser(response.data.user);
           setToken(response.data.token);
         }
-      } catch (error) {
+      } catch {
         console.log("No valid session found");
       } finally {
         setLoading(false);
