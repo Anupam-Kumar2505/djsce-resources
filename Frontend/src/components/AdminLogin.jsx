@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-function AdminLogin({ onClose, onSuccess }) {
+function AdminLogin({ onClose, onSuccess, onLoginSuccess }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -12,14 +12,22 @@ function AdminLogin({ onClose, onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!username.trim() || !password) {
+      setError("Please enter both username and password");
+      return;
+    }
+
     setError("");
     setLoading(true);
 
     try {
+      const cleanUsername = username.trim();
+
       const response = await axios.post(
-        `${getApiUrl()}/api/auth/login`,
+        `${getApiUrl()}/auth/login`,
         {
-          username,
+          username: cleanUsername,
           password,
         },
         {
@@ -27,10 +35,29 @@ function AdminLogin({ onClose, onSuccess }) {
         }
       );
 
-      if (response.data.success) {
-        onSuccess(response.data.user, response.data.token);
+      const userData = response?.data?.user;
+      const userToken = response?.data?.token;
+
+      if (userData && userData.role === "admin") {
+        if (userToken) {
+          localStorage.setItem("adminToken", userToken);
+          localStorage.setItem("adminUser", JSON.stringify(userData));
+          axios.defaults.headers.common["Authorization"] = `Bearer ${userToken}`;
+        }
+
+        // Call success callbacks
+        if (onSuccess) {
+          onSuccess(userData, userToken);
+        }
+        if (onLoginSuccess) {
+          onLoginSuccess(userData, userToken);
+        }
+
+        if (onClose) {
+          onClose();
+        }
       } else {
-        setError(response.data.error || "Login failed");
+        setError("Admin access required");
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -58,6 +85,7 @@ function AdminLogin({ onClose, onSuccess }) {
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-bg text-ink-dim hover:text-ink transition-colors cursor-pointer"
+            title="Close"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

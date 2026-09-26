@@ -20,8 +20,26 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Restore session from localStorage on initial load
   useEffect(() => {
-    const checkAuth = async () => {
+    const savedToken = localStorage.getItem("adminToken");
+    const savedUser = localStorage.getItem("adminUser");
+
+    if (savedToken && savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        setToken(savedToken);
+        setUser(parsedUser);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
+      } catch (error) {
+        console.error("Error parsing saved admin user:", error);
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminUser");
+      }
+    }
+
+    // Optional background cookie session check
+    const checkCookieAuth = async () => {
       try {
         const url = import.meta.env.VITE_API_URL || "https://djsce-resources.onrender.com";
         const response = await axios.get(`${url}/auth/verify`, {
@@ -30,21 +48,32 @@ export const AuthProvider = ({ children }) => {
 
         if (response.data.user) {
           setUser(response.data.user);
-          setToken(response.data.token);
+          if (response.data.token) {
+            setToken(response.data.token);
+            localStorage.setItem("adminToken", response.data.token);
+            localStorage.setItem("adminUser", JSON.stringify(response.data.user));
+            axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
+          }
         }
       } catch {
-        console.log("No valid session found");
+        // No cookie session found, which is expected for JWT Bearer token flow
       } finally {
         setLoading(false);
       }
     };
 
-    checkAuth();
+    checkCookieAuth();
   }, []);
 
   const login = (userData, userToken) => {
     setUser(userData);
     setToken(userToken);
+
+    if (userToken) {
+      localStorage.setItem("adminToken", userToken);
+      localStorage.setItem("adminUser", JSON.stringify(userData));
+      axios.defaults.headers.common["Authorization"] = `Bearer ${userToken}`;
+    }
   };
 
   const logout = async () => {
@@ -62,6 +91,9 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       setToken(null);
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminUser");
+      delete axios.defaults.headers.common["Authorization"];
     }
   };
 
