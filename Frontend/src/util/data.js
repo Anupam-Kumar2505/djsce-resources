@@ -1,8 +1,54 @@
 export const years = [
-  { value: "1", label: "1st Year", icon: "1️⃣" },
-  { value: "2", label: "2nd Year", icon: "2️⃣" },
-  { value: "3", label: "3rd Year", icon: "3️⃣" },
-  { value: "4", label: "4th Year", icon: "4️⃣" },
+  { value: "1", code: "FE", label: "First Year", subtitle: "First Year · all branches", className: "y1" },
+  { value: "2", code: "SE", label: "Second Year", subtitle: "Second Year · all branches", className: "y2" },
+  { value: "3", code: "TE", label: "Third Year", subtitle: "Third Year · all branches", className: "y3" },
+  { value: "4", code: "BE", label: "Final Year", subtitle: "Final Year · all branches", className: "y4" },
+];
+
+export const types = [
+  { value: "Class Notes", label: "Class Notes" },
+  { value: "Term Test Papers", label: "Term Test Papers" },
+  { value: "Final Papers", label: "Final Papers" },
+];
+
+export const departments = [
+  { code: "COMPS", name: "Computer Engineering", count: "FE–BE · 480 files" },
+  { code: "IT", name: "Information Technology", count: "FE–BE · 410 files" },
+  { code: "CSEDS", name: "Computer Science and Engineering (Data Science)", count: "FE-BE · 100 files" },
+  { code: "AIML", name: "Artificial Intelligence and Machine Learning", count: "FE–BE · 205 files" },
+  { code: "AIDS", name: "Artificial Intelligence and Data Science", count: "FE–BE · 260 files" },
+  { code: "CSEICB", name: "Computer Science and Engineering (IoT and Cyber Security with Blockchain Technology)", count: "FE-BE · 100 files" },
+  { code: "EXTC", name: "Electronics & Telecommuication Engineering", count: "FE–BE · 340 files" },
+  { code: "MECH", name: "Mechanical Engineering", count: "FE–BE · 300 files" },
+];
+
+export const initialRecentUploads = [
+  {
+    title: "Operating Systems — Unit 4 notes",
+    meta: "Computer Engineering · TE · 2h ago",
+    type: "PDF",
+    badge: "New",
+    badgeClass: "f-pdf",
+  },
+  {
+    title: "Signals & Systems — 2023 question paper",
+    meta: "EXTC · SE · Yesterday",
+    type: "PDF",
+    badge: "New",
+    badgeClass: "f-pdf",
+  },
+  {
+    title: "Thermodynamics — solved numericals",
+    meta: "Mechanical · SE · 2 days ago",
+    type: "DOC",
+    badgeClass: "f-doc",
+  },
+  {
+    title: "Machine Learning — Unit 2 notes",
+    meta: "AI & Data Science · TE · 3 days ago",
+    type: "PDF",
+    badgeClass: "f-pdf",
+  },
 ];
 
 // Color mapping for subjects
