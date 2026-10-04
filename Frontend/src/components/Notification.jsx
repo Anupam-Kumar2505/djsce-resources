@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
-function Notification({ message, type, onClose, duration = 5000 }) {
+function Notification({ message, type = "info", onClose, duration = 5000 }) {
   useEffect(() => {
     if (duration > 0) {
       const timer = setTimeout(() => {
@@ -13,14 +13,14 @@ function Notification({ message, type, onClose, duration = 5000 }) {
   const getTypeStyles = () => {
     switch (type) {
       case "success":
-        return "bg-green-600 text-white border-green-500";
+        return "bg-emerald-50 text-emerald-800 border-emerald-200";
       case "error":
-        return "bg-red-600 text-white border-red-500";
+        return "bg-rose-50 text-rose-800 border-rose-200";
       case "warning":
-        return "bg-orange-600 text-white border-orange-500";
+        return "bg-amber-50 text-amber-800 border-amber-200";
       case "info":
       default:
-        return "bg-blue-600 text-white border-blue-500";
+        return "bg-indigo-50 text-indigo-800 border-indigo-200";
     }
   };
 
@@ -28,95 +28,53 @@ function Notification({ message, type, onClose, duration = 5000 }) {
     switch (type) {
       case "success":
         return (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+          <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center flex-none">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
         );
       case "error":
         return (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <div className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center flex-none">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
         );
       case "warning":
         return (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
-            />
-          </svg>
+          <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center flex-none">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
         );
       case "info":
       default:
         return (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+          <div className="w-6 h-6 rounded-full bg-violet text-white flex items-center justify-center flex-none">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
         );
     }
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 animate-fade-in">
+    <div className="fixed top-20 right-6 z-50 animate-[fadeIn_0.3s_ease-in-out] max-w-sm">
       <div
-        className={`flex items-center p-4 rounded-lg border shadow-lg backdrop-blur-sm ${getTypeStyles()}`}
+        className={`flex items-center gap-3 p-4 rounded-2xl border shadow-xl backdrop-blur-md ${getTypeStyles()}`}
       >
-        <div className="flex-shrink-0 mr-3">{getIcon()}</div>
-        <p className="text-sm font-medium">{message}</p>
+        {getIcon()}
+        <p className="text-xs sm:text-sm font-semibold flex-1 leading-snug">{message}</p>
         <button
           onClick={onClose}
-          className="ml-4 flex-shrink-0 rounded-lg p-1 hover:bg-white/20 transition-colors"
+          className="p-1.5 rounded-lg text-current opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
